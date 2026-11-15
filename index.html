@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>池袋ホテル早見表</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+<style>
+/* Layout: 条件の要約と道中の安全メモを先に置き、予算・時間帯で絞った候補を「良い点/気になる点」の2列カードで比べる。 */
+:root {
+  --bg: #f3f2f6;
+  --surface: #ffffff;
+  --fg: #26242e;
+  --muted: #6a6676;
+  --line: #dedbe6;
+  --accent: #5b4b8a;
+  --accent-fg: #ffffff;
+  --chip: #e9e5f3;
+  --good: #1f6f5c;
+  --good-bg: #e3f2ed;
+  --warn: #9a5b12;
+  --warn-bg: #fbefdc;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  --font-head: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17151d; --surface: #211e2a; --fg: #ece9f3; --muted: #a29eb0;
+    --line: #353144; --accent: #b3a4e6; --accent-fg: #1a1624; --chip: #2d283b;
+    --good: #6fcfb3; --good-bg: #1b2e29; --warn: #e9b36a; --warn-bg: #33291a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17151d; --surface: #211e2a; --fg: #ece9f3; --muted: #a29eb0;
+  --line: #353144; --accent: #b3a4e6; --accent-fg: #1a1624; --chip: #2d283b;
+  --good: #6fcfb3; --good-bg: #1b2e29; --warn: #e9b36a; --warn-bg: #33291a;
+  color-scheme: dark;
+}
+html { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; }
+h1 { font-family: var(--font-head); font-size: 28px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.lead { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 12px; }
+.panel h2 { font-family: var(--font-head); font-size: 16px; margin: 0; }
+.group-label { font-size: 12px; letter-spacing: .08em; color: var(--muted); margin: 0 0 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 14px; color: var(--fg); background: var(--chip);
+  border: 1px solid transparent; border-radius: 999px; padding: 6px 14px; cursor: pointer; line-height: 1.4;
+}
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.chip:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.row > div { min-width: 0; }
+select { font: inherit; font-size: 14px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.bar { font-size: 14px; color: var(--muted); }
+details.safety { padding: 0; }
+details.safety summary { cursor: pointer; font-family: var(--font-head); font-size: 16px; padding: 14px 16px; }
+details.safety .body { padding: 0 16px 16px; display: grid; gap: 12px; font-size: 14px; }
+details.safety h3 { margin: 0 0 4px; font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+details.safety ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.card h3 { font-family: var(--font-head); font-size: 18px; line-height: 1.4; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.price { flex: none; text-align: right; line-height: 1.25; }
+.price b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.price span { display: block; font-size: 12px; color: var(--muted); }
+.meta { margin: 0; font-size: 13px; color: var(--muted); display: grid; gap: 2px; }
+.meta b { color: var(--fg); font-weight: 500; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.badges li { font-size: 12px; background: var(--chip); border-radius: 4px; padding: 1px 8px; }
+.pc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pc > div { border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.pc h4 { margin: 0 0 4px; font-size: 13px; }
+.pc ul { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; font-size: 14px; line-height: 1.6; }
+.pros { background: var(--good-bg); }
+.pros h4 { color: var(--good); }
+.cons { background: var(--warn-bg); }
+.cons h4 { color: var(--warn); }
+@media (max-width: 560px) { .pc { grid-template-columns: 1fr; } }
+.card a { color: var(--accent); font-size: 14px; }
+.empty { text-align: center; color: var(--muted); padding: 24px 0; }
+.notes { font-size: 13px; color: var(--muted); }
+.notes h2 { color: var(--fg); }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>池袋ホテル早見表</h1>
+    <p class="lead">予算1万円前後、休憩またはフリータイム、行き帰りの安全を重視して、10軒に絞り直しました。各ホテルの良い点と気になる点を並べています。</p>
+  </header>
+
+  <details class="panel safety" open>
+    <summary>行き帰りの安全について先に読む</summary>
+    <div class="body">
+      <div>
+        <h3>調べて分かったこと</h3>
+        <ul>
+          <li>2025年10月の調査(東京・埼玉の18〜45歳900人)で、いまの池袋を「悪い」と答えた人は35.8%で、平成の47.8%より減っています。これは印象の調査で、犯罪の統計ではありません。</li>
+          <li>西口の再開発後は、「明るくなった」と答えた人が再開発を知る人の40.0%いました。客引きやスカウトが減った、巡回を見かけるようになったという声もあります。</li>
+          <li>出口やホテル街ごとの治安を比べた資料は見つからなかったので、この表では場所の優劣はつけていません。</li>
+        </ul>
+      </div>
+      <div>
+        <h3>道中を安全にする選び方(一般的な心得)</h3>
+        <ul>
+          <li>フリータイムは、朝から昼に入って夕方までに出る時間帯を選ぶと、暗い時間に歩かずに済みます。</li>
+          <li>駅から徒歩2〜3分のホテルを選ぶと、歩く距離が短くなります。</li>
+          <li>ネット予約できるホテルなら、当日ホテルの前で迷わず入れます。</li>
+          <li>道は地図アプリで先に確認して、人通りのある大通りを使います。客引きや声かけには立ち止まらず、ホテルへ向かってください。</li>
+          <li>行き先と時間を、信頼できる人に伝えておくと安心です。</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <section class="panel" aria-label="絞り込み">
+    <div class="row">
+      <div>
+        <p class="group-label">利用の仕方</p>
+        <div class="chips" id="modes"></div>
+      </div>
+      <div>
+        <p class="group-label">曜日</p>
+        <div class="chips" id="days"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label class="group-label" for="budget" style="display:block">予算の上限(1部屋あたりの目安)</label>
+        <select id="budget">
+          <option value="5000">5,000円</option>
+          <option value="7000">7,000円</option>
+          <option value="8000">8,000円</option>
+          <option value="10000" selected>10,000円</option>
+        </select>
+      </div>
+      <div>
+        <label class="group-label" for="sort" style="display:block">並び順</label>
+        <select id="sort">
+          <option value="price">安い順</option>
+          <option value="walk">駅から近い順</option>
+          <option value="rating">口コミが良い順</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <p class="group-label">条件</p>
+      <div class="chips" id="flags"></div>
+    </div>
+  </section>
+
+  <div class="bar" id="count"></div>
+  <ul class="list" id="list"></ul>
+
+  <section class="panel notes" aria-label="注意と出典">
+    <h2>数字の見方と出典</h2>
+    <ul>
+      <li>料金は税込で、「〜」は各ホテルで一番安い部屋の料金です。部屋によって高くなります。延長料金や祝日・連休の特別料金は含みません。</li>
+      <li>空室は分かりません。金曜・土曜の夜などは、先に予約するか電話で確認してください。</li>
+      <li>ハピホテの記事で2026年11月14日に確認された料金を中心にしています。プティバリのフリータイムだけは、2025年版の記事の数字です。</li>
+      <li>口コミ評価は、ハピホテ掲載の評価と件数です。件数が少ないものは参考程度にしてください。</li>
+      <li>出典:
+        <a href="https://guide.happyhotel.jp/metropolitan/tokyo/recommend/ikebukuro-reasonable/">ハピホテ 池袋の安いラブホ</a>、
+        <a href="https://guide.happyhotel.jp/metropolitan/tokyo/recommend/ikebukuro-stn/">ハピホテ 池袋エリア55選</a>、
+        <a href="https://guide.happyhotel.jp/metropolitan/tokyo/recommend/ikebukuro-long-stay/">ハピホテ 長く過ごせるラブホ</a>、
+        <a href="https://minute.jp/articles/2458">minute フリータイムが安い池袋のラブホ</a>、
+        <a href="https://matcha-jp.com/jp/21941">MATCHA 池袋のラブホテル10選</a>、
+        <a href="https://news.mynavi.jp/article/20260115-3978053/">マイナビニュース 池袋の治安の調査</a>
+      </li>
+    </ul>
+  </section>
+</div>
+
+<script>
+/* rest/ft: [平日, 土日祝] の最安料金(円)。null は今回の資料で確認できなかったもの。 */
+var HOTELS = [
+  { name: "ホテル スカイロード", area: "北口側", walk: 5, rating: 4.2, reviews: 10, reserve: "no",
+    route: "JR池袋駅北口から徒歩約5分",
+    rest: [3500, 4000], restNote: "平日は最大4時間、土日祝は最大3時間",
+    ft: [3500, 4000], ftNote: "平日 5〜18時入室で最大13時間 / 土日祝 5〜16時入室で最大11時間",
+    pros: ["休憩もフリータイムも最安クラスで、1万円に大きく余裕がある", "フリータイムが長く、昼のうちに出やすい", "全室に携帯充電器と空気清浄機がある"],
+    cons: ["ネット予約ができない", "土日祝のフリータイムは平日より短い(最大11時間)"] },
+  { name: "ホテル WILL池袋", area: "北口側", walk: 5, rating: null, reviews: 0, reserve: "no",
+    route: "JR池袋駅北口から徒歩約5分",
+    rest: [3300, 3300], restNote: "",
+    ft: [4500, 4500], ftNote: "平日 5〜18時入室で最大13時間 / 土日祝 5〜17時入室で最大12時間",
+    pros: ["休憩3,300円〜、フリータイム4,500円〜と安い", "滞在の途中で外出できるので、先に食事に出られる", "入浴剤バイキングとウェルカムドリンクバーが無料", "飲食物を持ち込める"],
+    cons: ["ネット予約ができない", "この資料には口コミ評価がない"] },
+  { name: "ホテル 艶", area: "西口側", walk: 5, rating: 4.8, reviews: 6, reserve: "no",
+    route: "池袋駅から徒歩約5分(西口側)",
+    rest: [3800, 5500], restNote: "夜(17〜23時入室)は3時間から。1時間だけの休憩はない",
+    ft: [3800, 5500], ftNote: "平日 5〜18時入室で最大13時間 / 土日祝 5〜15時入室で最大10時間。部屋により最大7,000円",
+    pros: ["口コミ評価4.8と高い", "平日のフリータイムが13時間で3,800円〜", "禁煙の部屋がある(301号室)"],
+    cons: ["口コミが6件と少なく、評価は参考程度", "ネット予約ができない", "土日祝は5,500円〜、時間も10時間に短くなる"] },
+  { name: "HOTEL CHOCOLAT", area: "東口側(サンシャイン方面)", walk: 5, rating: 4.4, reviews: 20, reserve: "yes",
+    route: "サンシャイン方面から徒歩約5分(東口側)",
+    rest: [2500, 3000], restNote: "1時間10分から。平日は2,500〜3,000円",
+    ft: [5900, 7800], ftNote: "平日 6〜18時入室で最大12時間 5,900円(均一) / 土日祝 7,800円(均一)",
+    pros: ["休憩2,500円〜と安い", "料金が部屋によらず均一で分かりやすい", "ネット予約と電子マネーが使える", "口コミ4.4(20件)"],
+    cons: ["土日祝のフリータイムは7,800円まで上がる", "全13室と小さく、混む日は埋まりやすい"] },
+  { name: "ホテル プティバリ池袋店", area: "西口・メトロ側", walk: 2, rating: 4.5, reviews: 72, reserve: "yes",
+    route: "東京メトロ池袋駅C6出口から徒歩約2分(JR西口からは約5分)",
+    rest: [4800, 4800], restNote: "",
+    ft: [3900, 4900], ftNote: "平日 最大12時間 / 土日祝 最大11時間(2025年版記事の料金)",
+    pros: ["口コミ4.5(72件)と件数が多く、評価を信頼しやすい", "貸切の露天風呂と岩盤浴、カラオケ、ダーツが無料", "メトロの出口から2分で、歩く距離が短い", "事前予約すれば待たずに入れる"],
+    cons: ["人気で、金曜・土曜の夜などは予約が安心", "フリータイムの数字は2025年版の記事のもので、最新は要確認"] },
+  { name: "ホテル マリンブルー", area: "西口・メトロ側", walk: 3, rating: 4.0, reviews: 20, reserve: "yes",
+    route: "JR池袋駅メトロポリタン口から徒歩約3分",
+    rest: [4000, 4000], restNote: "",
+    ft: [6800, 7300], ftNote: "平日 6〜20時入室で最大14時間 6,800円(均一) / 土日祝 6〜19時入室で最大13時間 7,300円(均一)",
+    pros: ["フリータイムが均一料金で、予算内に収まりやすい", "駅から約3分で、ネット予約もできる", "手ぶらで泊まれるほどアメニティが豊富"],
+    cons: ["口コミ4.0(20件)は、この表の候補では低め", "土日祝は7,300円になる"] },
+  { name: "ホテル チャリチョコ", area: "西口側", walk: 6, rating: 3.8, reviews: 13, reserve: "yes",
+    route: "池袋駅から徒歩6〜10分(記事により差がある)",
+    rest: [3800, 3800], restNote: "",
+    ft: [6800, 7300], ftNote: "平日 6〜18時入室で最大12時間 6,800円(均一) / 土日祝 7,300円(均一)",
+    pros: ["ウェルカムのドリンク、スープ、スイーツが無料", "フリータイムが土日も使える(全日2部制)", "ネット予約ができる"],
+    cons: ["口コミ3.8(13件)は、この表の候補では最も低い", "駅から6〜10分と、やや歩く"] },
+  { name: "VARKIN 池袋西口店", area: "西口側", walk: 5, rating: null, reviews: 0, reserve: "unknown",
+    route: "池袋駅から徒歩3〜5分(記事により北口・西口の記載が分かれる)",
+    rest: [4500, 4500], restNote: "",
+    ft: [null, null], ftNote: "フリータイムの料金は今回の資料で確認できなかった",
+    pros: ["サウナや岩盤浴の部屋がある", "全室にVOD、Wi-Fi、ジェットバスがある", "宿泊7,700円〜で、休憩4,500円〜"],
+    cons: ["サウナ・岩盤浴の部屋は最安の部屋より高い可能性があり、要確認", "フリータイム料金と口コミ評価が確認できなかった"] },
+  { name: "ホテル X", area: "北口側", walk: 5, rating: 4.5, reviews: 137, reserve: "yes",
+    route: "JR池袋駅北口から徒歩約5分",
+    rest: [4500, 4500], restNote: "",
+    ft: [6000, 6000], ftNote: "平日 6〜17時入室で最大11時間。土日祝は6〜10時入室で5時間、10〜14時入室で4時間",
+    pros: ["口コミ4.5(137件)で、件数が最も多い", "一部の部屋に露天風呂とスチームサウナがある", "ネット予約、カード払い、自動精算機が使える"],
+    cons: ["宿泊は9,800円〜と、この表の中では高め", "土日祝のフリータイムは4〜5時間と短い"] },
+  { name: "ホテルバリアンリゾートフォレスト池袋西口店", area: "西口側", walk: 5, rating: 4.6, reviews: 18, reserve: "unknown",
+    route: "東京メトロ池袋駅C6出口から徒歩約5分",
+    rest: [5800, 5800], restNote: "",
+    ft: [null, null], ftNote: "フリータイムの料金は今回の資料で確認できなかった",
+    pros: ["口コミ4.6(18件)と高評価", "天蓋付きベッドや専用テラスの部屋、ホームシアターがある", "飲食物の持ち込みやデリバリーができる"],
+    cons: ["休憩5,800円〜、宿泊11,800円〜で、予算1万円には余裕が少ない", "フリータイムの料金が確認できなかった"] }
+];
+
+var state = { mode: "rest", day: 0, budget: 10000, sort: "price", flags: {} };
+var MODES = [["rest", "休憩"], ["ft", "フリータイム"]];
+var DAYS = [[0, "平日"], [1, "土日祝"]];
+var FLAGS = [["reserve", "ネット予約できる"], ["near", "駅から3分以内"], ["rated", "口コミ4.4以上"]];
+
+function el(tag, attrs, text) {
+  var n = document.createElement(tag);
+  if (attrs) for (var k in attrs) n.setAttribute(k, attrs[k]);
+  if (text) n.textContent = text;
+  return n;
+}
+function yen(n) { return n.toLocaleString("ja-JP") + "円"; }
+function priceOf(h) {
+  var p = state.mode === "rest" ? h.rest : h.ft;
+  return p[state.day];
+}
+
+function chipGroup(containerId, items, isOn, onClick) {
+  var c = document.getElementById(containerId); c.textContent = "";
+  items.forEach(function (it) {
+    var b = el("button", { "class": "chip", type: "button", "aria-pressed": String(isOn(it[0])) }, it[1]);
+    b.addEventListener("click", function () { onClick(it[0]); renderControls(); renderList(); });
+    c.appendChild(b);
+  });
+}
+function renderControls() {
+  chipGroup("modes", MODES, function (k) { return state.mode === k; }, function (k) { state.mode = k; });
+  chipGroup("days", DAYS, function (k) { return state.day === k; }, function (k) { state.day = k; });
+  chipGroup("flags", FLAGS, function (k) { return !!state.flags[k]; }, function (k) { state.flags[k] = !state.flags[k]; });
+}
+
+function renderList() {
+  var list = document.getElementById("list"); list.textContent = "";
+  var items = HOTELS.filter(function (h) {
+    var p = priceOf(h);
+    if (p !== null && p > state.budget) return false;
+    if (state.flags.reserve && h.reserve !== "yes") return false;
+    if (state.flags.near && h.walk > 3) return false;
+    if (state.flags.rated && !(h.rating !== null && h.rating >= 4.4)) return false;
+    return true;
+  });
+  items.sort(function (a, b) {
+    if (state.sort === "walk") return a.walk - b.walk;
+    if (state.sort === "rating") return (b.rating || 0) - (a.rating || 0);
+    var pa = priceOf(a), pb = priceOf(b);
+    if (pa === null) return 1;
+    if (pb === null) return -1;
+    return pa - pb;
+  });
+  document.getElementById("count").textContent =
+    items.length + "軒(" + (state.mode === "rest" ? "休憩" : "フリータイム") + "・" + (state.day ? "土日祝" : "平日") + "・" + yen(state.budget) + "まで)";
+  if (!items.length) {
+    list.appendChild(el("li", { "class": "empty" }, "条件に合うホテルがありません。予算や条件を変えてみてください。"));
+    return;
+  }
+  items.forEach(function (h) {
+    var li = el("li", { "class": "card" });
+    var top = el("div", { "class": "card-top" });
+    top.appendChild(el("h3", null, h.name));
+    var pr = el("div", { "class": "price" });
+    var p = priceOf(h);
+    pr.appendChild(el("b", null, p === null ? "要確認" : yen(p) + "〜"));
+    pr.appendChild(el("span", null, (state.mode === "rest" ? "休憩" : "フリータイム") + "・" + (state.day ? "土日祝" : "平日")));
+    top.appendChild(pr);
+    li.appendChild(top);
+
+    var meta = el("div", { "class": "meta" });
+    var note = state.mode === "rest" ? h.restNote : h.ftNote;
+    if (note) { var n = el("p", null, ""); n.style.margin = "0"; n.appendChild(el("b", null, (state.mode === "rest" ? "休憩" : "フリータイム") + ": ")); n.appendChild(document.createTextNode(note)); meta.appendChild(n); }
+    var r = el("p", null, ""); r.style.margin = "0";
+    r.appendChild(el("b", null, "道のり: ")); r.appendChild(document.createTextNode(h.area + "・" + h.route));
+    meta.appendChild(r);
+    li.appendChild(meta);
+
+    var badges = el("ul", { "class": "badges" });
+    badges.appendChild(el("li", null, "徒歩" + h.walk + "分前後"));
+    badges.appendChild(el("li", null, h.reserve === "yes" ? "ネット予約可" : h.reserve === "no" ? "ネット予約不可" : "ネット予約は未確認"));
+    badges.appendChild(el("li", null, h.rating !== null ? "口コミ " + h.rating + "(" + h.reviews + "件)" : "口コミ評価なし"));
+    li.appendChild(badges);
+
+    var pc = el("div", { "class": "pc" });
+    var pros = el("div", { "class": "pros" }); pros.appendChild(el("h4", null, "良い点"));
+    var pu = el("ul"); h.pros.forEach(function (t) { pu.appendChild(el("li", null, t)); }); pros.appendChild(pu);
+    var cons = el("div", { "class": "cons" }); cons.appendChild(el("h4", null, "気になる点"));
+    var cu = el("ul"); h.cons.forEach(function (t) { cu.appendChild(el("li", null, t)); }); cons.appendChild(cu);
+    pc.appendChild(pros); pc.appendChild(cons);
+    li.appendChild(pc);
+
+    li.appendChild(el("a", { href: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(h.name + " 池袋"), target: "_blank", rel: "noopener" }, "地図で場所を見る"));
+    list.appendChild(li);
+  });
+}
+
+document.getElementById("budget").addEventListener("change", function (e) { state.budget = parseInt(e.target.value, 10); renderList(); });
+document.getElementById("sort").addEventListener("change", function (e) { state.sort = e.target.value; renderList(); });
+renderControls();
+renderList();
+</script>
+</body>
+</html>
